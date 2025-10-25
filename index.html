@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đọc số 🐭</title>
+    <title>Đọc số 🐨 (Read Chinese Numbers)</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -30,32 +30,32 @@
             
             <!-- (1) Number Preview -->
             <div>
-                <label for="numberPreview" class="block text-sm font-medium text-gray-700">number</label>
+                <label for="numberPreview" class="block text-sm font-medium text-gray-700">Số</label>
                 <input type="text" id="numberPreview" readonly class="w-full p-3 border border-gray-300 rounded-lg opacity-50 transition-opacity duration-300">
             </div>
 
             <!-- (2) Hanzi Preview -->
             <div>
-                <label for="hanziPreview" class="block text-sm font-medium text-gray-700">hanzi</label>
+                <label for="hanziPreview" class="block text-sm font-medium text-gray-700">Hán tự</label>
                 <input type="text" id="hanziPreview" readonly class="w-full p-3 border border-gray-300 rounded-lg opacity-50 transition-opacity duration-300">
             </div>
 
             <!-- (3) Show Pinyin -->
             <div class="flex items-center">
                 <input type="checkbox" id="showPinyin" class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
-                <label for="showPinyin" class="ml-2 block text-sm text-gray-900">show pinyin</label>
+                <label for="showPinyin" class="ml-2 block text-sm text-gray-900">Hiện pinyin</label>
             </div>
 
             <!-- Settings Grid -->
             <div class="grid grid-cols-2 gap-4">
                 <!-- (4) Max Digits -->
                 <div>
-                    <label for="maxDigits" class="block text-sm font-medium text-gray-700">max digits</label>
+                    <label for="maxDigits" class="block text-sm font-medium text-gray-700">Số chữ số</label>
                     <input type="number" id="maxDigits" value="3" min="1" max="4" class="w-full p-3 border border-gray-300 rounded-lg">
                 </div>
                 <!-- (5) Turn -->
                 <div>
-                    <label for="turn" class="block text-sm font-medium text-gray-700">turn</label>
+                    <label for="turn" class="block text-sm font-medium text-gray-700">Số lượt</label>
                     <input type="number" id="turn" value="10" min="1" class="w-full p-3 border border-gray-300 rounded-lg">
                 </div>
             </div>
@@ -78,26 +78,26 @@
             
             <!-- (1) Number Display -->
             <div>
-                <label for="numberDisplay" class="block text-sm font-medium text-gray-700">number</label>
+                <label for="numberDisplay" class="block text-sm font-medium text-gray-700">Số</label>
                 <input type="text" id="numberDisplay" readonly class="w-full p-3 border border-gray-300 rounded-lg text-5xl font-bold text-center text-gray-900">
             </div>
 
             <!-- (2) Hanzi Display -->
             <div>
-                <label for="hanziDisplay" class="block text-sm font-medium text-gray-700">hanzi</label>
-                <input type="text" id="hanziDisplay" readonly class="w-full p-3 border border-gray-300 rounded-lg text-2xl text-center">
+                <label for="hanziDisplay" class="block text-sm font-medium text-gray-700">Hán tự</label>
+                <input type="text" id="hanziDisplay" readonly class="w-full p-3 border border-gray-300 rounded-lg text-xl text-center">
             </div>
 
             <!-- Max Digits and Turn Display -->
             <div class="grid grid-cols-2 gap-4">
                 <!-- Max Digits Display -->
                 <div>
-                    <label for="maxDigitsDisplay" class="block text-sm font-medium text-gray-700">max digits</label>
+                    <label for="maxDigitsDisplay" class="block text-sm font-medium text-gray-700">Số chữ số</label>
                     <input type="number" id="maxDigitsDisplay" readonly disabled class="w-full p-3 border border-gray-300 rounded-lg">
                 </div>
                 <!-- Turn Display -->
                 <div>
-                    <label for="turnDisplay" class="block text-sm font-medium text-gray-700">turn</label>
+                    <label for="turnDisplay" class="block text-sm font-medium text-gray-700">Số lượt</label>
                     <input type="number" id="turnDisplay" readonly class="w-full p-3 border border-gray-300 rounded-lg">
                 </div>
             </div>
@@ -153,6 +153,8 @@
             let doShowPinyin = false;
             let currentNumber = 0;
             let currentChinese = {};
+            let currentPreviewNum = 0; // Added
+            let currentPreviewChinese = {}; // Added
 
             // --- Chinese Number Converter (up to 9999) ---
             const digits = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
@@ -301,6 +303,10 @@
             }
 
             function showResult() {
+                // --- New: Speak the number ---
+                speakChinese(currentChinese.hanzi);
+                // --- End New ---
+
                 let text = currentChinese.hanzi;
                 if (doShowPinyin) {
                     text += ` (${currentChinese.pinyin})`;
@@ -317,19 +323,44 @@
                 }
             }
 
+            // --- New Function: Text-to-Speech ---
+            function speakChinese(text) {
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'zh-CN'; // Set language to Mandarin Chinese
+                    utterance.rate = 0.9; // A slightly slower rate can be clearer for learning
+                    window.speechSynthesis.speak(utterance);
+                } else {
+                    // Log an error if the browser doesn't support it
+                    console.log("Speech synthesis not supported in this browser.");
+                }
+            }
+
             // --- Event Listeners ---
             startButton.addEventListener('click', startGame);
             backButton.addEventListener('click', stopGame);
             nextButton.addEventListener('click', runNextTurn);
 
+            // Update Screen 1 Pinyin Preview
+            showPinyinCheckbox.addEventListener('change', () => {
+                let text = currentPreviewChinese.hanzi;
+                if (showPinyinCheckbox.checked) {
+                    text += ` (${currentPreviewChinese.pinyin})`;
+                }
+                hanziPreview.value = text;
+            });
+
             // --- Initial UI enhancement from wireframe ---
             // Show a preview number on load
             const previewNum = Math.floor(Math.random() * (Math.pow(10, 3) - 1)) + 1; // 1-999
-            numberPreview.value = previewNum;
-            const previewChinese = convertToChinese(previewNum);
-            hanziPreview.value = previewChinese.hanzi + (showPinyinCheckbox.checked ? ` (${previewChinese.pinyin})` : "");
+            currentPreviewNum = previewNum; // Use wider scope variable
+            numberPreview.value = currentPreviewNum;
+            
+            const previewChinese = convertToChinese(currentPreviewNum);
+            currentPreviewChinese = previewChinese; // Use wider scope variable
+            
+            hanziPreview.value = currentPreviewChinese.hanzi + (showPinyinCheckbox.checked ? ` (${currentPreviewChinese.pinyin})` : "");
         });
     </script>
 </body>
 </html>
-
