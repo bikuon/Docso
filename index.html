@@ -9,7 +9,7 @@
     <style>
         /* Use Inter font */
         body {
-            font-family: "Inter", sans-serif;
+            font-family: "IBM Plex Sans", sans-serif;
         }
         /* Custom styles for disabled inputs to match wireframe */
         input:disabled, input[readonly] {
@@ -74,7 +74,7 @@
 
         <!-- Screen 2: Game -->
         <div id="screen2" class="bg-white p-6 rounded-2xl shadow-lg space-y-4 hidden">
-            <h1 class="text-2xl font-bold text-center text-gray-800">Đọc số 🐨</h1>
+            <h1 class="text-2xl font-bold text-center text-gray-800">Đọc số 🐭</h1>
             
             <!-- (1) Number Display -->
             <div>
@@ -227,6 +227,11 @@
                 screen2.classList.add('hidden');
                 screen1.classList.remove('hidden');
 
+                // Reset timer display styles and text
+                timerDisplay.classList.remove('bg-red-500', 'text-white', 'text-red-500', 'font-bold', 'text-xl');
+                timerDisplay.classList.add('bg-gray-50', 'text-gray-700', 'font-medium');
+                timerDisplay.innerText = `timer : ${timerDuration}s`;
+
                 // Reset preview fields
                 numberPreview.value = "";
                 hanziPreview.value = "";
@@ -249,6 +254,10 @@
                 // 1.5 Update turn display
                 turnDisplay.value = totalTurns - currentTurn + 1;
 
+                // 1.6 Reset timer display styles
+                timerDisplay.classList.remove('bg-red-500', 'text-white', 'text-red-500', 'font-bold', 'text-xl');
+                timerDisplay.classList.add('bg-gray-50', 'text-gray-700', 'font-medium');
+
                 // 2. Generate new number
                 const maxNum = Math.pow(10, maxDigits);
                 currentNumber = Math.floor(Math.random() * (maxNum - 1)) + 1; // 1 to (10^maxDigits - 1)
@@ -269,13 +278,24 @@
                 let timeLeft = timerDuration;
                 timerDisplay.innerText = `timer : ${timeLeft}s`;
 
+                // Apply countdown styles
+                timerDisplay.classList.remove('bg-gray-50', 'text-gray-700', 'font-medium');
+                timerDisplay.classList.add('text-red-500', 'font-bold', 'text-xl');
+
                 gameInterval = setInterval(() => {
                     timeLeft--;
-                    timerDisplay.innerText = `timer : ${timeLeft}s`;
 
                     if (timeLeft <= 0) {
+                        timerDisplay.innerText = "o((>ω< ))o";
                         clearInterval(gameInterval);
+
+                        // Apply time's up styles
+                        timerDisplay.classList.remove('text-red-500');
+                        timerDisplay.classList.add('bg-red-500', 'text-white');
+                        
                         showResult();
+                    } else {
+                        timerDisplay.innerText = `timer : ${timeLeft}s`;
                     }
                 }, 1000);
             }
@@ -312,4 +332,3 @@
     </script>
 </body>
 </html>
-
