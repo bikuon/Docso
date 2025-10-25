@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đọc số 🐨 (Read Chinese Numbers)</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Use Inter font */
+        body {
+            font-family: "Inter", sans-serif;
+        }
+        /* Custom styles for disabled inputs to match wireframe */
+        input:disabled, input[readonly] {
+            background-color: #f3f4f6; /* bg-gray-100 */
+            color: #6b7280; /* text-gray-500 */
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <!-- Main App Container -->
+    <div class="w-full max-w-sm">
+        
+        <!-- Screen 1: Settings -->
+        <div id="screen1" class="bg-white p-6 rounded-2xl shadow-lg space-y-4">
+            <h1 class="text-2xl font-bold text-center text-gray-800">Đọc số 🐭</h1>
+            
+            <!-- (1) Number Preview -->
+            <div>
+                <label for="numberPreview" class="block text-sm font-medium text-gray-700">number</label>
+                <input type="text" id="numberPreview" readonly class="w-full p-3 border border-gray-300 rounded-lg opacity-50 transition-opacity duration-300">
+            </div>
+
+            <!-- (2) Hanzi Preview -->
+            <div>
+                <label for="hanziPreview" class="block text-sm font-medium text-gray-700">hanzi</label>
+                <input type="text" id="hanziPreview" readonly class="w-full p-3 border border-gray-300 rounded-lg opacity-50 transition-opacity duration-300">
+            </div>
+
+            <!-- (3) Show Pinyin -->
+            <div class="flex items-center">
+                <input type="checkbox" id="showPinyin" class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                <label for="showPinyin" class="ml-2 block text-sm text-gray-900">show pinyin</label>
+            </div>
+
+            <!-- Settings Grid -->
+            <div class="grid grid-cols-2 gap-4">
+                <!-- (4) Max Digits -->
+                <div>
+                    <label for="maxDigits" class="block text-sm font-medium text-gray-700">max digits</label>
+                    <input type="number" id="maxDigits" value="3" min="1" max="4" class="w-full p-3 border border-gray-300 rounded-lg">
+                </div>
+                <!-- (5) Turn -->
+                <div>
+                    <label for="turn" class="block text-sm font-medium text-gray-700">turn</label>
+                    <input type="number" id="turn" value="10" min="1" class="w-full p-3 border border-gray-300 rounded-lg">
+                </div>
+            </div>
+
+            <!-- (6) Timer Setting -->
+            <div>
+                <label for="timerSetting" class="block text-sm font-medium text-gray-700">timer (s)</label>
+                <input type="number" id="timerSetting" value="5" min="1" class="w-full p-3 border border-gray-300 rounded-lg">
+            </div>
+
+            <!-- (7) Start Button -->
+            <button id="startButton" class="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors duration-300">
+                START
+            </button>
+        </div>
+
+        <!-- Screen 2: Game -->
+        <div id="screen2" class="bg-white p-6 rounded-2xl shadow-lg space-y-4 hidden">
+            <h1 class="text-2xl font-bold text-center text-gray-800">Đọc số 🐨</h1>
+            
+            <!-- (1) Number Display -->
+            <div>
+                <label for="numberDisplay" class="block text-sm font-medium text-gray-700">number</label>
+                <input type="text" id="numberDisplay" readonly class="w-full p-3 border border-gray-300 rounded-lg text-3xl font-bold text-center text-gray-900">
+            </div>
+
+            <!-- (2) Hanzi Display -->
+            <div>
+                <label for="hanziDisplay" class="block text-sm font-medium text-gray-700">hanzi</label>
+                <input type="text" id="hanziDisplay" readonly class="w-full p-3 border border-gray-300 rounded-lg text-2xl text-center">
+            </div>
+
+            <!-- Max Digits and Turn Display -->
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Max Digits Display -->
+                <div>
+                    <label for="maxDigitsDisplay" class="block text-sm font-medium text-gray-700">max digits</label>
+                    <input type="number" id="maxDigitsDisplay" readonly disabled class="w-full p-3 border border-gray-300 rounded-lg">
+                </div>
+                <!-- Turn Display -->
+                <div>
+                    <label for="turnDisplay" class="block text-sm font-medium text-gray-700">turn</label>
+                    <input type="number" id="turnDisplay" readonly class="w-full p-3 border border-gray-300 rounded-lg">
+                </div>
+            </div>
+
+            <!-- (6) Timer Display -->
+            <div id="timerDisplay" class="w-full text-center p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 font-medium">
+                timer : 5s
+            </div>
+
+            <!-- (8) & (9) Buttons -->
+            <div class="grid grid-cols-2 gap-4">
+                <button id="backButton" class="w-full bg-red-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-600 transition-colors duration-300">
+                    BACK
+                </button>
+                <button id="nextButton" class="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors duration-300">
+                    NEXT
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const screen1 = document.getElementById('screen1');
+            const screen2 = document.getElementById('screen2');
+
+            // Screen 1 Elements
+            const numberPreview = document.getElementById('numberPreview');
+            const hanziPreview = document.getElementById('hanziPreview');
+            const showPinyinCheckbox = document.getElementById('showPinyin');
+            const maxDigitsInput = document.getElementById('maxDigits');
+            const turnsInput = document.getElementById('turn');
+            const timerSettingInput = document.getElementById('timerSetting');
+            const startButton = document.getElementById('startButton');
+
+            // Screen 2 Elements
+            const numberDisplay = document.getElementById('numberDisplay');
+            const hanziDisplay = document.getElementById('hanziDisplay');
+            const maxDigitsDisplay = document.getElementById('maxDigitsDisplay');
+            const turnDisplay = document.getElementById('turnDisplay');
+            const timerDisplay = document.getElementById('timerDisplay');
+            const backButton = document.getElementById('backButton');
+            const nextButton = document.getElementById('nextButton');
+
+            // --- Game State ---
+            let gameInterval = null;
+            let currentTurn = 1;
+            let totalTurns = 10;
+            let maxDigits = 3;
+            let timerDuration = 5;
+            let doShowPinyin = false;
+            let currentNumber = 0;
+            let currentChinese = {};
+
+            // --- Chinese Number Converter (up to 9999) ---
+            const digits = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+            const pinyinDigits = ["líng", "yī", "èr", "sān", "sì", "wǔ", "liù", "qī", "bā", "jiǔ"];
+            const units = ["", "十", "百", "千"];
+            const pinyinUnits = ["", "shí", "bǎi", "qiān"];
+
+            function convertToChinese(num) {
+                if (num === 0) return { hanzi: "零", pinyin: "líng" };
+
+                let s = String(num);
+                let len = s.length;
+                let hanzi = "";
+                let pinyin = "";
+                let zeroFlag = false;
+
+                for (let i = 0; i < len; i++) {
+                    let digit = parseInt(s[i]);
+                    let unitIndex = len - 1 - i;
+
+                    if (digit === 0) {
+                        zeroFlag = true;
+                    } else {
+                        if (zeroFlag) {
+                            hanzi += digits[0];
+                            pinyin += pinyinDigits[0] + " ";
+                            zeroFlag = false;
+                        }
+                        
+                        // Special case for '10' (十) vs '20' (二十)
+                        if (digit === 1 && unitIndex === 1) {
+                             hanzi += units[unitIndex];
+                             pinyin += pinyinUnits[unitIndex] + " ";
+                        } else {
+                            hanzi += digits[digit] + units[unitIndex];
+                            pinyin += pinyinDigits[digit] + " " + (units[unitIndex] ? pinyinUnits[unitIndex] + " " : "");
+                        }
+                    }
+                }
+                return { hanzi, pinyin: pinyin.trim() };
+            }
+
+            // --- Game Logic Functions ---
+
+            function startGame() {
+                // 1. Get settings from Screen 1
+                maxDigits = parseInt(maxDigitsInput.value) || 3;
+                // Limit max digits to 4 for our converter
+                if (maxDigits > 4) {
+                    maxDigits = 4;
+                    maxDigitsInput.value = 4;
+                }
+                totalTurns = parseInt(turnsInput.value) || 10;
+                timerDuration = parseInt(timerSettingInput.value) || 5;
+                doShowPinyin = showPinyinCheckbox.checked;
+                currentTurn = 1;
+
+                // 2. Update Screen 2 UI
+                maxDigitsDisplay.value = maxDigits;
+                turnDisplay.value = totalTurns;
+                
+                // 3. Switch screens
+                screen1.classList.add('hidden');
+                screen2.classList.remove('hidden');
+
+                // 4. Start first turn
+                runNextTurn();
+            }
+
+            function stopGame() {
+                clearInterval(gameInterval);
+                screen2.classList.add('hidden');
+                screen1.classList.remove('hidden');
+
+                // Reset preview fields
+                numberPreview.value = "";
+                hanziPreview.value = "";
+                numberPreview.classList.add('opacity-50');
+                hanziPreview.classList.add('opacity-50');
+                nextButton.innerText = "NEXT";
+            }
+
+            function runNextTurn() {
+                if (currentTurn > totalTurns) {
+                    stopGame();
+                    return;
+                }
+
+                // 1. Reset fields
+                hanziDisplay.value = "";
+                nextButton.disabled = true;
+                nextButton.classList.add('opacity-50', 'cursor-not-allowed');
+
+                // 1.5 Update turn display
+                turnDisplay.value = totalTurns - currentTurn + 1;
+
+                // 2. Generate new number
+                const maxNum = Math.pow(10, maxDigits);
+                currentNumber = Math.floor(Math.random() * (maxNum - 1)) + 1; // 1 to (10^maxDigits - 1)
+                numberDisplay.value = currentNumber;
+
+                // 3. Convert to Chinese (but don't show yet)
+                currentChinese = convertToChinese(currentNumber);
+
+                // 4. Start timer
+                startTimer();
+
+                // 5. Update turn counter
+                currentTurn++;
+            }
+
+            function startTimer() {
+                clearInterval(gameInterval);
+                let timeLeft = timerDuration;
+                timerDisplay.innerText = `timer : ${timeLeft}s`;
+
+                gameInterval = setInterval(() => {
+                    timeLeft--;
+                    timerDisplay.innerText = `timer : ${timeLeft}s`;
+
+                    if (timeLeft <= 0) {
+                        clearInterval(gameInterval);
+                        showResult();
+                    }
+                }, 1000);
+            }
+
+            function showResult() {
+                let text = currentChinese.hanzi;
+                if (doShowPinyin) {
+                    text += ` (${currentChinese.pinyin})`;
+                }
+                hanziDisplay.value = text;
+
+                // Enable Next button
+                nextButton.disabled = false;
+                nextButton.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                // Check if last turn
+                if (currentTurn > totalTurns) {
+                    nextButton.innerText = "FINISH";
+                }
+            }
+
+            // --- Event Listeners ---
+            startButton.addEventListener('click', startGame);
+            backButton.addEventListener('click', stopGame);
+            nextButton.addEventListener('click', runNextTurn);
+
+            // --- Initial UI enhancement from wireframe ---
+            // Show a preview number on load
+            const previewNum = Math.floor(Math.random() * (Math.pow(10, 3) - 1)) + 1; // 1-999
+            numberPreview.value = previewNum;
+            const previewChinese = convertToChinese(previewNum);
+            hanziPreview.value = previewChinese.hanzi + (showPinyinCheckbox.checked ? ` (${previewChinese.pinyin})` : "");
+        });
+    </script>
+</body>
+</html>
